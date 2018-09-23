@@ -134,6 +134,7 @@ class player(object):
         self.isSelected = False
         self.color = pygame.color.THECOLORS[color]
         self.velocity = [0,0]
+        self.moveState = [0,0,0,0] #Up, down, left, right
         self.isMoving = False
         self.slowCount = 25
         self.hitBox = cirHitBox(x, y, 25)
@@ -147,14 +148,33 @@ class player(object):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.rad, 0);
         if self.isSelected:
             pygame.draw.circle(win, pygame.color.THECOLORS["gray"], (self.x, self.y), self.hitBox.rad, 1)
-    def moveUp(self):
-        self.velocity = [0, -self.speed]
-    def moveDown(self):
-        self.velocity = [0, self.speed]
-    def moveRight(self):
-        self.velocity = [self.speed, 0]
-    def moveLeft(self):
-        self.velocity = [-self.speed, 0]
+
+    def setIsMovingUp(self, set):
+        self.moveState[0] = 1 if set else 0
+    def setIsMovingDown(self, set):
+        self.moveState[1] = 1 if set else 0
+    def setIsMovingLeft(self, set):
+        self.moveState[2] = 1 if set else 0
+    def setIsMovingRight(self, set):
+        self.moveState[3] = 1 if set else 0
+
+    def move(self):
+        if (self.moveState[2] + self.moveState[3] is not 0):
+            self.velocity[0] = (-self.moveState[2] + self.moveState[3]) * self.speed #/ (self.moveState[2] + self.moveState[3])
+        if (self.moveState[0] + self.moveState[1] is not 0):
+            self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed #/ (self.moveState[0] + self.moveState[1])
+
+    def checkIsMoving(self):
+        if (sum(self.moveState) == 4):
+            self.isMoving = False
+        else:
+            if ((sum(self.moveState) % 2) == 1):
+                self.isMoving = True
+            else:
+                if (self.moveState[0] == self.moveState[1] or self.moveState[2] == self.moveState[3]):
+                    self.isMoving = False
+                else:
+                    self.isMoving = True
 
     def checkShotRadius(self,temp):
         if (temp.x - self.x)*(temp.x - self.x) + (temp.y - self.y)*(temp.y - self.y) < self.shotRadius*self.shotRadius:
@@ -184,13 +204,14 @@ class player(object):
             if self.randomMove > 10:
                 index = random.randint(0,3)
                 if index == 0:
-                    self.moveLeft()
+                    self.setIsMovingLeft(not random.getrandbits(1))
                 if index == 1:
-                    self.moveRight()
+                    self.setIsMovingRight(not random.getrandbits(1))
                 if index == 2:
-                    self.moveUp()
+                    self.setIsMovingUp(not random.getrandbits(1))
                 if index == 3:
-                    self.moveDown()
+                    self.setIsMovingDown(not random.getrandbits(1))
+                self.move()
                 self.randomMove = 0
 
         # moved by player
@@ -376,19 +397,28 @@ while run:
     #p1 input
     p1.isMoving = False
     if keys[pygame.K_a]:
-        p1.moveLeft()
-        p1.isMoving = True
+        p1.setIsMovingLeft(True)
+    else:
+        p1.setIsMovingLeft(False)
 
     if keys[pygame.K_d]:
-       p1.moveRight()
-       p1.isMoving = True
+        p1.setIsMovingRight(True)
+    else:
+        p1.setIsMovingRight(False)
 
     if keys[pygame.K_w]:
-        p1.moveUp()
-        p1.isMoving = True
+        p1.setIsMovingUp(True)
+    else:
+        p1.setIsMovingUp(False)
+
     if keys[pygame.K_s]:
-        p1.moveDown()
-        p1.isMoving = True
+        p1.setIsMovingDown(True)
+    else:
+        p1.setIsMovingDown(False)
+
+    p1.checkIsMoving()
+    p1.move()
+
     if leftOfset == 0:
         if keys[pygame.K_v]:
             if p1.shot(_ball,15):
@@ -409,19 +439,28 @@ while run:
     p2.isMoving = False
 
     if keys[pygame.K_LEFT]:
-        p2.moveLeft()
-        p2.isMoving = True
+        p2.setIsMovingLeft(True)
+    else:
+        p2.setIsMovingLeft(False)
 
     if keys[pygame.K_RIGHT]:
-        p2.moveRight()
-        p2.isMoving = True
+        p2.setIsMovingRight(True)
+    else:
+        p2.setIsMovingRight(False)
 
     if keys[pygame.K_UP]:
-        p2.moveUp()
-        p2.isMoving = True
+        p2.setIsMovingUp(True)
+    else:
+        p2.setIsMovingUp(False)
+
     if keys[pygame.K_DOWN]:
-        p2.moveDown()
-        p2.isMoving = True
+        p2.setIsMovingDown(True)
+    else:
+        p2.setIsMovingDown(False)
+
+    p2.checkIsMoving()
+    p2.move()
+
     if rightOfset == 0:
         if keys[pygame.K_KP1]:
             if p2.shot(_ball, 15):
