@@ -160,9 +160,9 @@ class player(object):
 
     def move(self):
         if (self.moveState[2] + self.moveState[3] is not 0):
-            self.velocity[0] = (-self.moveState[2] + self.moveState[3]) * self.speed #/ (self.moveState[2] + self.moveState[3])
+            self.velocity[0] = (-self.moveState[2] + self.moveState[3]) * self.speed // (self.moveState[2] + self.moveState[3])
         if (self.moveState[0] + self.moveState[1] is not 0):
-            self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed #/ (self.moveState[0] + self.moveState[1])
+            self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed // (self.moveState[0] + self.moveState[1])
 
     def checkIsMoving(self):
         if (sum(self.moveState) == 4):
