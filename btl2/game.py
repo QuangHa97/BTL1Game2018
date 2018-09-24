@@ -1,12 +1,10 @@
 
 import pygame
-from PodSixNet.Connection import  connection
-from time import sleep
 import random
 import math
 pygame.init()
 
-win = pygame.display.set_mode((845, 410))
+win = pygame.display.set_mode((900, 465))
 myfont = pygame.font.SysFont("monospace", 15)
 bg = pygame.image.load('background.jpg')
 pygame.mixer.music.load('backgroundMusic.mp3')
@@ -19,7 +17,9 @@ clock = pygame.time.Clock()
 
 leftScore = 0
 rightScore = 0
-
+# 1-1
+# 3-3
+gameMode = 3
 
 class hitBox(object):
     def __init__(self, x, y):
@@ -52,6 +52,7 @@ class ball(object):
         self.hitBox = cirHitBox(x, y, 13)
         self.rad = 11
 
+
     def draw(self, win):
         pygame.draw.circle(win, self.color, (self.x, self.y), 11, 0);
         pygame.draw.circle(win, pygame.color.THECOLORS["red"], (self.x, self.y), self.hitBox.rad, 2)
@@ -59,30 +60,48 @@ class ball(object):
 
     def update(self):
 
+        xdecrease = 0
+        ydecrease = 0
+
+        if not self.velocity[0] == 0 or not self.velocity[1] == 0:
+            xdecrease = 1/5.0 * (float(abs(self.velocity[0])) / math.sqrt(
+                float((self.velocity[0]) * (self.velocity[0])) + float((self.velocity[1]) * (self.velocity[1]))))
+            ydecrease = 1/5.0 * (float(abs(self.velocity[1])) / math.sqrt(
+                float((self.velocity[0]) * (self.velocity[0])) + float((self.velocity[1]) * (self.velocity[1]))))
         ######### fix ball move
-        if not self.isMoving and self.slowCount % 5 == 0:
+
+        if not self.isMoving :
+
             if self.velocity[0] > 0:
-                self.velocity[0] -= 1
-            elif self.velocity[0] < 0:
-                self.velocity[0] += 1
-            elif self.velocity[1] > 0:
-                self.velocity[1] -= 1
-            elif self.velocity[1] < 0:
-                self.velocity[1] += 1
-            self.slowCount -= 1
-        else:
-            self.slowCount = 25
+                self.velocity[0] -= xdecrease
+                if self.velocity[0] < 0:
+                    self.velocity[0] = 0
+            if self.velocity[0] < 0:
+                self.velocity[0] += xdecrease
+                if self.velocity[0] > 0:
+                    self.velocity[0] = 0
+            if self.velocity[1] > 0:
+                self.velocity[1] -= ydecrease
+                if self.velocity[1] < 0:
+                    self.velocity[1] = 0
+            if self.velocity[1] < 0:
+                self.velocity[1] += ydecrease
+                if self.velocity[1] > 0:
+                    self.velocity[1] = 0
+
+
+
         if not self.checkIntersectWithBound(ballBound):
            # if not self.checkIntersectWithPlayer(p1):
-                self.x += self.velocity[0]
-                self.y += self.velocity[1]
+                self.x += int(self.velocity[0])
+                self.y += int(self.velocity[1])
 
 
         self.hitBox.x = self.x
         self.hitBox.y = self.y
         if self.checkIntersectWithGoalLeft() or self.checkIntersectWithGoalRight():
-            self.x = 419
-            self.y = 204
+            self.x = 451
+            self.y = 234
             self.velocity = [0,0]
 
 
@@ -161,8 +180,15 @@ class player(object):
     def move(self):
         if (self.moveState[2] + self.moveState[3] is not 0):
             self.velocity[0] = (-self.moveState[2] + self.moveState[3]) * self.speed // (self.moveState[2] + self.moveState[3])
+        else:
+            self.velocity[0] = 0
         if (self.moveState[0] + self.moveState[1] is not 0):
             self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed // (self.moveState[0] + self.moveState[1])
+        else:
+            self.velocity[1] =0
+        if self.isSelected:
+            print 'x velocity ' + str(self.velocity[0])
+            print 'y velocity ' + str(self.velocity[1])
 
     def checkIsMoving(self):
         if (sum(self.moveState) == 4):
@@ -233,26 +259,40 @@ class player(object):
         else:
             _ball.isMoving = False
 
-        if not self.isMoving and self.slowCount % 5 == 0:
+        xdecrease = 0
+        ydecrease = 0
+
+        if not self.velocity[0] == 0 or not self.velocity[1] == 0:
+            xdecrease = 1 / 5.0 * (float(abs(self.velocity[0])) / math.sqrt(
+                float((self.velocity[0]) * (self.velocity[0])) + float((self.velocity[1]) * (self.velocity[1]))))
+            ydecrease = 1 / 5.0 * (float(abs(self.velocity[1])) / math.sqrt(
+                float((self.velocity[0]) * (self.velocity[0])) + float((self.velocity[1]) * (self.velocity[1]))))
+        ######### fix ball move
+
+        if not self.isMoving:
+
             if self.velocity[0] > 0:
-                self.velocity[0] -= 1
-            elif self.velocity[0] < 0:
-                self.velocity[0] += 1
-            elif self.velocity[1] > 0:
-                self.velocity[1] -= 1
-            elif self.velocity[1] < 0:
-                self.velocity[1] += 1
-            self.slowCount -= 1
-        else:
-            self.slowCount = 25
-
-
+                self.velocity[0] -= xdecrease
+                if self.velocity[0] < 0:
+                    self.velocity[0] = 0
+            if self.velocity[0] < 0:
+                self.velocity[0] += xdecrease
+                if self.velocity[0] > 0:
+                    self.velocity[0] = 0
+            if self.velocity[1] > 0:
+                self.velocity[1] -= ydecrease
+                if self.velocity[1] < 0:
+                    self.velocity[1] = 0
+            if self.velocity[1] < 0:
+                self.velocity[1] += ydecrease
+                if self.velocity[1] > 0:
+                    self.velocity[1] = 0
 
         if not self.checkIntersect(bgHitBox):
             if not self.checkIntersectWithBall(_ball):
                 if not self.checkIntersectWithOtherPlayer():
-                    self.x += self.velocity[0]
-                    self.y += self.velocity[1]
+                    self.x += int(self.velocity[0])
+                    self.y += int(self.velocity[1])
 
 
         self.hitBox.x = self.x
@@ -290,25 +330,27 @@ def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
 
-goalLeftBound = recHitBox(42,148,11,116)
-goalRightBound = recHitBox(776,148,11,116)
-bgHitBox = recHitBox(0, 0, 845, 410)
-ballBound = recHitBox(50, 34, 743, 343)
+goalLeftBound = recHitBox(42+28,148+27,11,116)
+goalRightBound = recHitBox(776+28,148+27,11,116)
+bgHitBox = recHitBox(0, 0, 900, 465)
+ballBound = recHitBox(50+28, 34+27, 743, 343)
 
 
-p =  [player(150,120,"black",1),player(219,287,"black",1),player(312,200,"black",1)]
-pTwo =  [player(510,188,"red",2),player(619,102,"red",2),player(683,287,"red",2)]
+p =  [player(150+28,120+27,"black",1),player(219+28,287+27,"black",1),player(312+28,200+27,"black",1)]
+pTwo =  [player(510+28,188+27,"red",2),player(619+28,102+27,"red",2),player(683+28,287+27,"red",2)]
 
 p1 = p[0]
 p2 = pTwo[0]
 p1.isSelected = True
 p2.isSelected = False
-_ball = ball(420,205)
+_ball = ball(451,234)
 leftOfset = 0
 rightOfset = 0
 
 
 def changeCharTwo():
+    if gameMode == 1:
+        return
     global p2
     global rightOfset
     dis0 = (pTwo[0].x - _ball.x)*(pTwo[0].x - _ball.x) +(pTwo[0].y - _ball.y)*(pTwo[0].y - _ball.y)
@@ -331,8 +373,11 @@ def changeCharTwo():
     p2.isSelected = True
     rightOfset = 1
 def changeChar():
+    if gameMode == 1:
+        return
     global p1
     global  leftOfset
+
     dis0 = (p[0].x - _ball.x)*(p[0].x - _ball.x) +(p[0].y - _ball.y)*(p[0].y - _ball.y)
     dis1 = (p[1].x - _ball.x) * (p[1].x - _ball.x) + (p[1].y - _ball.y) * (p[1].y - _ball.y)
     dis2 = (p[2].x - _ball.x) * (p[2].x - _ball.x) + (p[2].y - _ball.y) * (p[2].y - _ball.y)
@@ -393,9 +438,18 @@ while run:
         p2.isSelected = False
     if keys[pygame.K_2]:
         p2.isSelected = True
-
+    #1 vs 1
+    if keys[pygame.K_3]:
+        gameMode = 1
+        p =  [player(150,120,"black",1)]
+        p1 = p[0]
+        p[0].isSelected = True
+        pTwo = [player(510, 188, "red", 2)]
+        p2 = pTwo[0]
+        pTwo[0].isSelected = True
     #p1 input
     p1.isMoving = False
+
     if keys[pygame.K_a]:
         p1.setIsMovingLeft(True)
     else:
@@ -417,7 +471,8 @@ while run:
         p1.setIsMovingDown(False)
 
     p1.checkIsMoving()
-    p1.move()
+    if p1.isMoving:
+        p1.move()
 
     if leftOfset == 0:
         if keys[pygame.K_v]:
@@ -459,7 +514,8 @@ while run:
         p2.setIsMovingDown(False)
 
     p2.checkIsMoving()
-    p2.move()
+    if p2.isMoving:
+        p2.move()
 
     if rightOfset == 0:
         if keys[pygame.K_KP1]:
@@ -486,5 +542,4 @@ while run:
     redrawGameWindow()
 
 pygame.quit()
-
 
