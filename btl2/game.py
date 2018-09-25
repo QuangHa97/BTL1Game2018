@@ -20,6 +20,7 @@ rightScore = 0
 # 1-1
 # 3-3
 gameMode = 3
+isGoal = False
 
 class hitBox(object):
     def __init__(self, x, y):
@@ -113,15 +114,19 @@ class ball(object):
             return False
     def checkIntersectWithGoalLeft(self):
         global rightScore
+        global isGoal
         if self.hitBox.x - self.hitBox.rad + self.velocity[0] <= goalLeftBound.x + goalLeftBound.width and self.y +self.rad > goalLeftBound.y and self.y - self.rad < goalLeftBound.y +goalLeftBound.height:
             rightScore += 1
+            isGoal = True
             return True
         else:
             return False
     def checkIntersectWithGoalRight(self):
         global leftScore
+        global isGoal
         if self.hitBox.x + self.hitBox.rad + self.velocity[0] >= goalRightBound.x + goalRightBound.width  and self.y + self.rad > goalRightBound.y and self.y - self.rad < goalRightBound.y + goalRightBound.height:
             leftScore += 1
+            isGoal = True
             return True
         else:
             return False
@@ -149,6 +154,8 @@ class player(object):
     def __init__(self, x, y, color, _group):
         self.x = x
         self.y = y
+        self._originalX = x
+        self._originalY = y
         self.speed = 4
         self.isSelected = False
         self.color = pygame.color.THECOLORS[color]
@@ -164,6 +171,10 @@ class player(object):
         self.group = _group
         self.randomMove = 0
     def draw(self, win):
+        global isGoal
+        if (isGoal):
+            self.x = self._originalX
+            self.y = self._originalY
         pygame.draw.circle(win, self.color, (self.x, self.y), self.rad, 0);
         if self.isSelected:
             pygame.draw.circle(win, pygame.color.THECOLORS["gray"], (self.x, self.y), self.hitBox.rad, 1)
@@ -186,9 +197,9 @@ class player(object):
             self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed // (self.moveState[0] + self.moveState[1])
         else:
             self.velocity[1] =0
-        if self.isSelected:
-            print 'x velocity ' + str(self.velocity[0])
-            print 'y velocity ' + str(self.velocity[1])
+        #if self.isSelected:
+            #print('x velocity ' + str(self.velocity[0]))
+            #print('y velocity ' + str(self.velocity[1]))
 
     def checkIsMoving(self):
         if (sum(self.moveState) == 4):
@@ -372,6 +383,7 @@ def changeCharTwo():
     p2 = pTwo[index]
     p2.isSelected = True
     rightOfset = 1
+
 def changeChar():
     if gameMode == 1:
         return
@@ -397,7 +409,9 @@ def changeChar():
     p1 = p[index]
     p1.isSelected = True
     leftOfset =1
+
 def redrawGameWindow():
+    global isGoal
     win.blit(bg, (0, 0))
     for p1 in p:
         p1.draw(win)
@@ -411,6 +425,8 @@ def redrawGameWindow():
     label = myfont.render(text, 1, (255, 255, 0))
     win.blit(label, (726, 15))
     pygame.display.update()
+    if (isGoal):
+        isGoal = False
 
 
 # mainloop
