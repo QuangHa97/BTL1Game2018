@@ -4,7 +4,7 @@ import random
 import math
 pygame.init()
 
-win = pygame.display.set_mode((900, 465))
+win = pygame.display.set_mode((845, 410))
 myfont = pygame.font.SysFont("monospace", 15)
 bg = pygame.image.load('background.jpg')
 pygame.mixer.music.load('backgroundMusic.mp3')
@@ -52,6 +52,8 @@ class ball(object):
         self.slowCount = 25
         self.hitBox = cirHitBox(x, y, 13)
         self.rad = 11
+        self.isShot = False
+        self.maximumVelocity = 1000
 
 
     def draw(self, win):
@@ -104,6 +106,14 @@ class ball(object):
             self.x = 451
             self.y = 234
             self.velocity = [0,0]
+
+        if (self.isShot):
+            if ((self.velocity[0] <= self.maximumVelocity[0] / 2.2) and
+                    (self.velocity[1] <= self.maximumVelocity[1] / 2.2)):
+                print('Pass')
+                changeChar()
+                changeCharTwo()
+                self.isShot = False
 
 
     def checkIntersectWithPlayer(self, temp):
@@ -230,6 +240,8 @@ class player(object):
             total = (temp.x - self.x) * (temp.x - self.x) + (temp.y - self.y) * (temp.y - self.y)
             shotDirection = [(temp.x - self.x) / math.sqrt(total), (temp.y - self.y) / math.sqrt(total)]
             temp.velocity = [int(shotDirection[0] * force),int(shotDirection[1] * force)]
+            temp.maximumVelocity = temp.velocity
+            temp.isShot = True
             return True
         else:
             return False
@@ -492,13 +504,11 @@ while run:
 
     if leftOfset == 0:
         if keys[pygame.K_v]:
-            if p1.shot(_ball,15):
-                changeChar()
+            p1.shot(_ball,15)
             p1.isMoving = False
 
         if keys[pygame.K_b]:
-            if p1.shot(_ball,20):
-                changeChar()
+            p1.shot(_ball,20)
             p1.isMoving = False
 
         if keys[pygame.K_q]:
@@ -535,13 +545,11 @@ while run:
 
     if rightOfset == 0:
         if keys[pygame.K_KP1]:
-            if p2.shot(_ball, 15):
-                changeCharTwo()
+            p2.shot(_ball, 15)
             p2.isMoving = False
 
         if keys[pygame.K_KP2]:
-            if p2.shot(_ball, 20):
-                changeCharTwo()
+            p2.shot(_ball, 20)
             p2.isMoving = False
 
         if keys[pygame.K_KP3]:
