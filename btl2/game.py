@@ -4,7 +4,7 @@ import random
 import math
 pygame.init()
 
-win = pygame.display.set_mode((845, 410))
+win = pygame.display.set_mode((900, 465))
 myfont = pygame.font.SysFont("monospace", 15)
 bg = pygame.image.load('background.jpg')
 pygame.mixer.music.load('backgroundMusic.mp3')
@@ -20,7 +20,6 @@ rightScore = 0
 # 1-1
 # 3-3
 gameMode = 3
-isGoal = False
 
 class hitBox(object):
     def __init__(self, x, y):
@@ -52,8 +51,6 @@ class ball(object):
         self.slowCount = 25
         self.hitBox = cirHitBox(x, y, 13)
         self.rad = 11
-        self.isShot = False
-        self.maximumVelocity = 1000
 
 
     def draw(self, win):
@@ -107,14 +104,6 @@ class ball(object):
             self.y = 234
             self.velocity = [0,0]
 
-        if (self.isShot):
-            if ((self.velocity[0] <= self.maximumVelocity[0] / 2.2) and
-                    (self.velocity[1] <= self.maximumVelocity[1] / 2.2)):
-                print('Pass')
-                changeChar()
-                changeCharTwo()
-                self.isShot = False
-
 
     def checkIntersectWithPlayer(self, temp):
         if (temp.x - self.x) * (temp.x - self.x) + (temp.y - self.y) * (
@@ -124,22 +113,20 @@ class ball(object):
             return False
     def checkIntersectWithGoalLeft(self):
         global rightScore
-        global isGoal
         if self.hitBox.x - self.hitBox.rad + self.velocity[0] <= goalLeftBound.x + goalLeftBound.width and self.y +self.rad > goalLeftBound.y and self.y - self.rad < goalLeftBound.y +goalLeftBound.height:
             rightScore += 1
-            isGoal = True
             return True
         else:
             return False
     def checkIntersectWithGoalRight(self):
         global leftScore
-        global isGoal
         if self.hitBox.x + self.hitBox.rad + self.velocity[0] >= goalRightBound.x + goalRightBound.width  and self.y + self.rad > goalRightBound.y and self.y - self.rad < goalRightBound.y + goalRightBound.height:
             leftScore += 1
-            isGoal = True
             return True
         else:
             return False
+
+
     ## check intersect and adjust velocity
     def checkIntersectWithBound(self, temp):
         #with rec
@@ -164,8 +151,6 @@ class player(object):
     def __init__(self, x, y, color, _group):
         self.x = x
         self.y = y
-        self._originalX = x
-        self._originalY = y
         self.speed = 4
         self.isSelected = False
         self.color = pygame.color.THECOLORS[color]
@@ -181,10 +166,6 @@ class player(object):
         self.group = _group
         self.randomMove = 0
     def draw(self, win):
-        global isGoal
-        if (isGoal):
-            self.x = self._originalX
-            self.y = self._originalY
         pygame.draw.circle(win, self.color, (self.x, self.y), self.rad, 0);
         if self.isSelected:
             pygame.draw.circle(win, pygame.color.THECOLORS["gray"], (self.x, self.y), self.hitBox.rad, 1)
@@ -207,9 +188,9 @@ class player(object):
             self.velocity[1] = (-self.moveState[0] + self.moveState[1]) * self.speed // (self.moveState[0] + self.moveState[1])
         else:
             self.velocity[1] =0
-        #if self.isSelected:
-            #print('x velocity ' + str(self.velocity[0]))
-            #print('y velocity ' + str(self.velocity[1]))
+        if self.isSelected:
+            print 'x velocity ' + str(self.velocity[0])
+            print 'y velocity ' + str(self.velocity[1])
 
     def checkIsMoving(self):
         if (sum(self.moveState) == 4):
@@ -240,8 +221,6 @@ class player(object):
             total = (temp.x - self.x) * (temp.x - self.x) + (temp.y - self.y) * (temp.y - self.y)
             shotDirection = [(temp.x - self.x) / math.sqrt(total), (temp.y - self.y) / math.sqrt(total)]
             temp.velocity = [int(shotDirection[0] * force),int(shotDirection[1] * force)]
-            temp.maximumVelocity = temp.velocity
-            temp.isShot = True
             return True
         else:
             return False
@@ -395,7 +374,6 @@ def changeCharTwo():
     p2 = pTwo[index]
     p2.isSelected = True
     rightOfset = 1
-
 def changeChar():
     if gameMode == 1:
         return
@@ -421,9 +399,7 @@ def changeChar():
     p1 = p[index]
     p1.isSelected = True
     leftOfset =1
-
 def redrawGameWindow():
-    global isGoal
     win.blit(bg, (0, 0))
     for p1 in p:
         p1.draw(win)
@@ -437,8 +413,6 @@ def redrawGameWindow():
     label = myfont.render(text, 1, (255, 255, 0))
     win.blit(label, (726, 15))
     pygame.display.update()
-    if (isGoal):
-        isGoal = False
 
 
 # mainloop
@@ -504,11 +478,13 @@ while run:
 
     if leftOfset == 0:
         if keys[pygame.K_v]:
-            p1.shot(_ball,15)
+            if p1.shot(_ball,15):
+                changeChar()
             p1.isMoving = False
 
         if keys[pygame.K_b]:
-            p1.shot(_ball,20)
+            if p1.shot(_ball,20):
+                changeChar()
             p1.isMoving = False
 
         if keys[pygame.K_q]:
@@ -545,11 +521,13 @@ while run:
 
     if rightOfset == 0:
         if keys[pygame.K_KP1]:
-            p2.shot(_ball, 15)
+            if p2.shot(_ball, 15):
+                changeCharTwo()
             p2.isMoving = False
 
         if keys[pygame.K_KP2]:
-            p2.shot(_ball, 20)
+            if p2.shot(_ball, 20):
+                changeCharTwo()
             p2.isMoving = False
 
         if keys[pygame.K_KP3]:
