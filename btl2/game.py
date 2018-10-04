@@ -20,7 +20,7 @@ rightScore = 0
 # 1-1
 # 3-3
 gameMode = 3
-
+isDebug = False
 class hitBox(object):
     def __init__(self, x, y):
         self.x = x
@@ -35,11 +35,16 @@ class recHitBox(hitBox):
         self.width = width
         self.height = height
 
+    def draw(self):
+        if isDebug:
+            pygame.draw.rect(win,  pygame.color.THECOLORS["red"], (self.x, self.y, self.width, self.height), 2);
 class cirHitBox(hitBox):
     def __init__(self, x, y, rad):
         hitBox.__init__(self, x, y)
         self.rad = rad
-
+    def draw(self):
+        if isDebug:
+            pygame.draw.circle(win, pygame.color.THECOLORS["red"],(self.x, self.y), self.rad,2)
 class ball(object):
     def __init__(self, x, y):
         self.x = x
@@ -55,8 +60,9 @@ class ball(object):
 
     def draw(self, win):
         pygame.draw.circle(win, self.color, (self.x, self.y), 11, 0);
-        pygame.draw.circle(win, pygame.color.THECOLORS["red"], (self.x, self.y), self.hitBox.rad, 2)
-
+        if isDebug:
+            pygame.draw.circle(win, pygame.color.THECOLORS["red"], (self.x, self.y), self.hitBox.rad, 2)
+        self.hitBox.draw()
 
     def update(self):
 
@@ -99,6 +105,7 @@ class ball(object):
 
         self.hitBox.x = self.x
         self.hitBox.y = self.y
+        self.checkIntersectWithB()
         if self.checkIntersectWithGoalLeft() or self.checkIntersectWithGoalRight():
             self.x = 451
             self.y = 234
@@ -120,12 +127,19 @@ class ball(object):
             return False
     def checkIntersectWithGoalRight(self):
         global leftScore
-        if self.hitBox.x + self.hitBox.rad + self.velocity[0] >= goalRightBound.x + goalRightBound.width  and self.y + self.rad > goalRightBound.y and self.y - self.rad < goalRightBound.y + goalRightBound.height:
+        if self.hitBox.x + self.hitBox.rad + self.velocity[0] >= goalRightBound.x + goalRightBound.width/2  and self.y + self.rad > goalRightBound.y and self.y - self.rad < goalRightBound.y + goalRightBound.height:
             leftScore += 1
             return True
         else:
             return False
 
+    def checkIntersectWithB(self):
+        global  b
+        for _b in b:
+            if (_b.x -  self.x) * (_b.x - self.x) + (_b.y - self.y) * (
+                    _b.y - self.y) < (self.rad + _b.rad + 2) * (self.rad + _b.rad + 2):
+                self.velocity[0] = -self.velocity[0]
+                self.velocity[1] = -self.velocity[1]
 
     ## check intersect and adjust velocity
     def checkIntersectWithBound(self, temp):
@@ -169,7 +183,7 @@ class player(object):
         pygame.draw.circle(win, self.color, (self.x, self.y), self.rad, 0);
         if self.isSelected:
             pygame.draw.circle(win, pygame.color.THECOLORS["gray"], (self.x, self.y), self.hitBox.rad, 1)
-
+        self.hitBox.draw()
     def setIsMovingUp(self, set):
         self.moveState[0] = 1 if set else 0
     def setIsMovingDown(self, set):
@@ -331,16 +345,19 @@ class player(object):
 def clamp(n, smallest, largest):
     return max(smallest, min(n, largest))
 
-
+b1L = cirHitBox(42+28+15,148+27, 10)
+b2L = cirHitBox(42+28+15, 148+27+116,10)
+b1R = cirHitBox(785+28 ,148+27,10)
+b2R = cirHitBox(785 +28 , 148+27+116, 10)
+b = [b1L,b2L,b1R,b2R]
 goalLeftBound = recHitBox(42+28,148+27,11,116)
-goalRightBound = recHitBox(776+28,148+27,11,116)
+goalRightBound = recHitBox(785+28,148+27,11,116)
 bgHitBox = recHitBox(0, 0, 900, 465)
 ballBound = recHitBox(50+28, 34+27, 743, 343)
 
 
 p =  [player(150+28,120+27,"black",1),player(219+28,287+27,"black",1),player(312+28,200+27,"black",1)]
 pTwo =  [player(510+28,188+27,"red",2),player(619+28,102+27,"red",2),player(683+28,287+27,"red",2)]
-
 p1 = p[0]
 p2 = pTwo[0]
 p1.isSelected = True
@@ -406,7 +423,14 @@ def redrawGameWindow():
 
     for p2 in pTwo:
         p2.draw(win)
-
+    ballBound.draw()
+    goalRightBound.draw()
+    goalLeftBound.draw()
+    bgHitBox.draw()
+    b1L.draw()
+    b2L.draw()
+    b2R.draw()
+    b1R.draw()
     _ball.draw(win)
     text = ''
     text = text + str(leftScore) + ' - ' + str(rightScore)
@@ -449,6 +473,8 @@ while run:
         pTwo = [player(510, 188, "red", 2)]
         p2 = pTwo[0]
         pTwo[0].isSelected = True
+    if keys[pygame.K_4]:
+        isDebug = not isDebug
     #p1 input
     p1.isMoving = False
 
